@@ -637,6 +637,12 @@ public sealed partial class RuntimeTaskService : IRuntimeTaskService, IRuntimeSe
         CancellationToken cancellationToken)
     {
         await UpdateEncounterCaptureButtonStateAsync(state, frame, cancellationToken);
+        // 第一回合血条解除形态识图挂在截图主循环，先于 OCR 循环与技能释放，避免错过第一回合。
+        await TryObserveEnemyHealthForReliefAsync(
+            state,
+            frame,
+            _battle.BattleId,
+            cancellationToken);
         // 先更新当前状态，长按键序列执行期间也能显示正确的状态和动作。
         Volatile.Write(ref _lastInfoOverlayStatus, screen switch
         {

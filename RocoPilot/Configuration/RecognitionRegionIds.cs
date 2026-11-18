@@ -4,6 +4,7 @@ internal static class RecognitionRegionIds
 {
     public const string MagicPoint = "magic-point";
     public const string BattleEnemyName = "battle-enemy-name";
+    public const string BattleEnemyHealth = "battle-enemy-health";
     public const string BattleChatButton = "battle-button-chat";
     public const string BattleSkillButton = "battle-button-skill";
     public const string BattleSkillPlayerBadge = "battle-skill-player-badge";

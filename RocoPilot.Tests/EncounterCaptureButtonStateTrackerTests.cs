@@ -113,6 +113,26 @@ public sealed class EncounterCaptureButtonStateTrackerTests
     }
 
     [TestMethod]
+    public void MarkRelievedBypassesButtonTransitionAndStopsFurtherObservation()
+    {
+        var tracker = new EncounterCaptureButtonStateTracker();
+
+        Assert.IsTrue(tracker.MarkRelieved());
+        Assert.IsFalse(tracker.MarkRelieved());
+        Assert.IsTrue(tracker.IsRelieved);
+        Assert.IsFalse(tracker.HasSeenDisabled);
+        Assert.IsFalse(tracker.ShouldHoldAttackForUnconfirmedRelief);
+
+        // 已解除后，捕捉按钮的观察不再重复触发解除事件。
+        Assert.IsFalse(tracker.Observe(EncounterCaptureButtonState.Disabled));
+        Assert.IsFalse(tracker.Observe(EncounterCaptureButtonState.Enabled));
+        Assert.AreEqual(0, tracker.EnabledConfirmationCount);
+
+        tracker.Reset();
+        Assert.IsFalse(tracker.IsRelieved);
+    }
+
+    [TestMethod]
     public void ResetStartsANewBattleTransition()
     {
         var tracker = new EncounterCaptureButtonStateTracker();
