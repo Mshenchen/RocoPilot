@@ -55,6 +55,28 @@ public sealed class InfoOverlayActivityTests
     }
 
     [TestMethod]
+    public void BattleFlowShowsRecognizedBloodlineAlongsideCreatureName()
+    {
+        var snapshot = new InfoOverlaySnapshot("战斗中 - 技能选择", [], Now, Scene: InfoOverlayScene.Battle,
+            BattleCreatureName: "恶魔狼", BattleBloodline: "奇异");
+
+        var presentation = InfoOverlayIslandPresentation.Resolve(snapshot, null, Now)!;
+        Assert.AreEqual("战斗流程", presentation.Category);
+        Assert.AreEqual("技能选择", presentation.Title);
+        Assert.AreEqual("精灵：恶魔狼 · 血脉：奇异", presentation.Description);
+    }
+
+    [TestMethod]
+    public void BattleFlowHidesBloodlineWhenUnrecognized()
+    {
+        var snapshot = new InfoOverlaySnapshot("战斗中 - 技能选择", [], Now, Scene: InfoOverlayScene.Battle,
+            BattleCreatureName: "恶魔狼");
+
+        var presentation = InfoOverlayIslandPresentation.Resolve(snapshot, null, Now)!;
+        Assert.AreEqual("精灵：恶魔狼", presentation.Description);
+    }
+
+    [TestMethod]
     public void ClearingIndependentTaskRestoresTheRealtimeSceneAndDetails()
     {
         var snapshot = new InfoOverlaySnapshot("大世界", [], Now, Scene: InfoOverlayScene.World,

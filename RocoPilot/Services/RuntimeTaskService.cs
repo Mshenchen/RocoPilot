@@ -489,8 +489,9 @@ public sealed partial class RuntimeTaskService : IRuntimeTaskService, IRuntimeSe
                                     ResetEncounterRecordSuppression();
                                 }
 
-                                // 后台战斗 OCR 只接收本轮已确认的战斗画面。
-                                if (_scene == GameScene.Battle)
+                                // 后台战斗 OCR 接收战斗与未识别画面：战斗入场即解除的奇遇，
+                                // 血脉/异色横幅出现早于战斗场景确认，未识别帧也要供给横幅扫描。
+                                if (_scene is GameScene.Battle or GameScene.Unknown)
                                     session.PublishFrame(frame, _battle.BattleId);
                                 else
                                     session.ClearFrame();
@@ -539,6 +540,14 @@ public sealed partial class RuntimeTaskService : IRuntimeTaskService, IRuntimeSe
         _infoOverlayService.UpdateSnapshot(CreateInfoOverlaySnapshot("状态待识别", DateTimeOffset.Now));
     }
 
+    private enum RuntimeOcrScanMode
+    {
+        // 战斗中的完整扫描：横幅 + 提示预览 + 名单/统计/精灵名。
+        Full,
+        // 状态未识别（战斗入场过渡）：只扫血脉/异色两个横幅。
+        BannerOnly
+    }
+
     private async Task RuntimeOcrLoopAsync(RuntimeSession session, CancellationToken cancellationToken)
     {
         var state = session.State;
@@ -553,7 +562,8 @@ public sealed partial class RuntimeTaskService : IRuntimeTaskService, IRuntimeSe
                 if (activeScanTask is not null) await activeScanTask;
                 activeScanTask = null;
 
-                if (_isSuspended || _scene != GameScene.Battle)
+                if (_isSuspended
+                    || (_scene != GameScene.Battle && !IsUnrecognizedSceneBannerScanActive()))
                 {
                     continue;
                 }
@@ -565,7 +575,11 @@ public sealed partial class RuntimeTaskService : IRuntimeTaskService, IRuntimeSe
                     var battleId = _battle.BattleId;
                     var frame = session.RentFrame(battleId);
                     if (frame is null) continue;
-                    activeScanTask = RunRuntimeOcrScanAsync(state, frame, battleId, cancellationToken);
+                    // 入场过渡期（未识别）只扫血脉/异色横幅；战斗中按完整节奏扫描。
+                    var mode = _scene == GameScene.Battle
+                        ? RuntimeOcrScanMode.Full
+                        : RuntimeOcrScanMode.BannerOnly;
+                    activeScanTask = RunRuntimeOcrScanAsync(state, frame, battleId, mode, cancellationToken);
                     session.Track(activeScanTask);
                 }
                 finally { _runtimeIteration.Release(); }
@@ -581,17 +595,31 @@ public sealed partial class RuntimeTaskService : IRuntimeTaskService, IRuntimeSe
         }
     }
 
+    /// <summary>
+    /// 状态未识别（战斗入场过渡等）期间，血脉/异色横幅可能早于战斗场景确认出现，
+    /// 按横幅节奏只扫两个横幅区域；超过时限的长期未识别（菜单等）不空转。
+    /// </summary>
+    private bool IsUnrecognizedSceneBannerScanActive()
+    {
+        return !_isSuspended
+            && _scene == GameScene.Unknown
+            && _unrecognizedStateDetectedAt is { } detectedAt
+            && DateTimeOffset.Now - detectedAt
+                < TimeSpan.FromMilliseconds(RuntimeRecognitionDefaults.UnrecognizedBannerScanWindowMs);
+    }
+
     private async Task RunRuntimeOcrScanAsync(
         RuntimeTaskState state,
         CapturedFrame frame,
         long battleId,
+        RuntimeOcrScanMode mode,
         CancellationToken cancellationToken)
     {
         using (frame)
         {
             try
             {
-                await UpdateRuntimeEncounterOcrSignalsAsync(state, frame, battleId, cancellationToken);
+                await UpdateRuntimeEncounterOcrSignalsAsync(state, frame, battleId, mode, cancellationToken);
             }
             catch (OperationCanceledException)
             {
@@ -730,6 +758,9 @@ public sealed partial class RuntimeTaskService : IRuntimeTaskService, IRuntimeSe
             },
             _autoBattleSettings.IsEnabled,
             _overlayActivities.CreatureName,
+            _battle.Bloodline == Core.Battle.EncounterBloodlineKind.Unrecognized
+                ? string.Empty
+                : EncounterBloodlineRecognition.GetDisplayName(_battle.Bloodline),
             independentTask?.Name ?? string.Empty,
             independentTask?.Progress);
     }
