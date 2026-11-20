@@ -25,6 +25,12 @@
 
 RocoPilot 是面向《洛克王国：世界》的 Windows 桌面辅助工具，提供自动战斗、奇遇计数、花种挑战和传说精灵等功能，支持异色记录、赛季归档及多设备数据同步。
 
+> [!NOTE]
+> **关于本仓库**：本项目原作者 [Felix Christian](https://github.com/FelixHenrikChristian) 的仓库（FelixHenrikChristian/RocoPilot）及其 GitHub 账号已删除，原官网与原更新源均已失效。本仓库是项目的社区延续版本，由 [@Mshenchen](https://github.com/Mshenchen) 基于 dev 分支继续维护，感谢原作者的开源贡献。
+>
+> - 下载请使用本仓库的 [Releases](https://github.com/Mshenchen/RocoPilot/releases/latest) 或[官网下载页](https://mshenchen.github.io/RocoPilot/download/)。
+> - 旧版本（v0.5.1.0 之前）应用内"检查更新"指向已失效的原更新源，请直接下载新版本安装包覆盖安装。
+
 <a id="features"></a>
 
 ## ✨ 功能
