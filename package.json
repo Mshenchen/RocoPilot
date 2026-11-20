@@ -11,12 +11,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/FelixHenrikChristian/RocoPilot.git"
+    "url": "git+https://github.com/Mshenchen/RocoPilot.git"
   },
   "bugs": {
-    "url": "https://github.com/FelixHenrikChristian/RocoPilot/issues"
+    "url": "https://github.com/Mshenchen/RocoPilot/issues"
   },
-  "homepage": "https://felixhenrikchristian.github.io/RocoPilot/",
+  "homepage": "https://mshenchen.github.io/RocoPilot/",
   "devDependencies": {
     "vitepress": "^1.6.4"
   }

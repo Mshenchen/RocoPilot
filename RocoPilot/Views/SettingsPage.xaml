@@ -338,7 +338,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Content="GitHub"
-                                NavigateUri="https://github.com/FelixHenrikChristian/RocoPilot" />
+                                NavigateUri="https://github.com/Mshenchen/RocoPilot" />
                         </Grid>
 
                         <Border
@@ -368,7 +368,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Content="查看文档"
-                                NavigateUri="https://github.com/FelixHenrikChristian/RocoPilot#readme" />
+                                NavigateUri="https://github.com/Mshenchen/RocoPilot#readme" />
                         </Grid>
 
                         <Border
@@ -398,7 +398,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Content="提交 Issue"
-                                NavigateUri="https://github.com/FelixHenrikChristian/RocoPilot/issues" />
+                                NavigateUri="https://github.com/Mshenchen/RocoPilot/issues" />
                         </Grid>
                     </StackPanel>
                 </Grid>

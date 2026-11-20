@@ -4,12 +4,12 @@
   <p><strong>自动战斗 · 奇遇计数 · 花种挑战 · 传说精灵</strong></p>
   <p>
     <img src="https://img.shields.io/badge/platform-Windows-0078D4?logo=windows" alt="Windows" />
-    <a href="https://github.com/FelixHenrikChristian/RocoPilot/releases/latest"><img src="https://img.shields.io/github/v/release/FelixHenrikChristian/RocoPilot?label=version" alt="Release version" /></a>
-    <a href="https://github.com/FelixHenrikChristian/RocoPilot/releases"><img src="https://img.shields.io/github/downloads/FelixHenrikChristian/RocoPilot/total?label=downloads" alt="Downloads" /></a>
-    <a href="LICENSE"><img src="https://img.shields.io/github/license/FelixHenrikChristian/RocoPilot" alt="License" /></a>
+    <a href="https://github.com/Mshenchen/RocoPilot/releases/latest"><img src="https://img.shields.io/github/v/release/Mshenchen/RocoPilot?label=version" alt="Release version" /></a>
+    <a href="https://github.com/Mshenchen/RocoPilot/releases"><img src="https://img.shields.io/github/downloads/Mshenchen/RocoPilot/total?label=downloads" alt="Downloads" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/github/license/Mshenchen/RocoPilot" alt="License" /></a>
   </p>
   <p>
-    <a href="https://github.com/FelixHenrikChristian/RocoPilot/releases/latest">⬇️ 下载</a>
+    <a href="https://github.com/Mshenchen/RocoPilot/releases/latest">⬇️ 下载</a>
     · <a href="#usage">🚀 使用</a>
     · <a href="#features">✨ 功能</a>
     · <a href="#notice">💡 说明</a>
@@ -21,7 +21,7 @@
   <img src="RocoPilot/Assets/LaunchPageCover.png" width="820" alt="RocoPilot 启动页封面" />
 </p>
 
-<p align="center"><a href="https://felixhenrikchristian.github.io/RocoPilot/">🌐 访问官网 · 查看完整使用文档</a></p>
+<p align="center"><a href="https://mshenchen.github.io/RocoPilot/">🌐 访问官网 · 查看完整使用文档</a></p>
 
 RocoPilot 是面向《洛克王国：世界》的 Windows 桌面辅助工具，提供自动战斗、奇遇计数、花种挑战和传说精灵等功能，支持异色记录、赛季归档及多设备数据同步。
 
@@ -42,9 +42,9 @@ RocoPilot 是面向《洛克王国：世界》的 Windows 桌面辅助工具，�
 
 ### 下载安装
 
-1. 从[官网下载页](https://felixhenrikchristian.github.io/RocoPilot/download/)或 [GitHub Releases](https://github.com/FelixHenrikChristian/RocoPilot/releases/latest) 下载 `RocoPilot-Setup.exe`。GitHub 访问较慢时可使用官网的 Cloudflare R2 下载源。
+1. 从[官网下载页](https://mshenchen.github.io/RocoPilot/download/)或 [GitHub Releases](https://github.com/Mshenchen/RocoPilot/releases/latest) 下载 `RocoPilot-Setup.exe`。GitHub 访问较慢时可使用官网的 Cloudflare R2 下载源。
 2. 双击安装包，按提示完成安装并打开 RocoPilot。
-3. 首次使用自动操作时，按应用引导安装输入驱动并重启电脑，详见[安装说明](https://felixhenrikchristian.github.io/RocoPilot/document/install)。
+3. 首次使用自动操作时，按应用引导安装输入驱动并重启电脑，详见[安装说明](https://mshenchen.github.io/RocoPilot/document/install)。
 
 ### 开始使用
 
@@ -54,7 +54,7 @@ RocoPilot 是面向《洛克王国：世界》的 Windows 桌面辅助工具，�
 4. 花种挑战和传说精灵均在“任务”页启动：选择目标，设置次数与战斗配置，再点击对应的“启动”。花种需先扫描，传说精灵可选择难度与印记策略。
 5. 在“统计”页查看记录、确认异色；确认捕获后会清零对应奇遇累计。
 
-各页面的控件位置、详细配置和常见问题见[官网使用文档](https://felixhenrikchristian.github.io/RocoPilot/document/)。
+各页面的控件位置、详细配置和常见问题见[官网使用文档](https://mshenchen.github.io/RocoPilot/document/)。
 
 <a id="notice"></a>
 

@@ -128,7 +128,7 @@ function Ensure-KachinaBuilder {
 function New-EffectiveConfig {
     $githubUrl = $GitHubInstallerUrl
     if ([string]::IsNullOrWhiteSpace($githubUrl)) {
-        $githubUrl = "https://github.com/FelixHenrikChristian/RocoPilot/releases/latest/download/RocoPilot.Install.exe"
+        $githubUrl = "https://github.com/Mshenchen/RocoPilot/releases/latest/download/RocoPilot.Install.exe"
     }
 
     $config = Get-Content $configTemplate -Raw | ConvertFrom-Json

@@ -32,7 +32,7 @@ export default defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/FelixHenrikChristian/RocoPilot' }
+      { icon: 'github', link: 'https://github.com/Mshenchen/RocoPilot' }
     ],
 
     footer: {

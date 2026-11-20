@@ -7,7 +7,7 @@ Place `kachina-builder.exe` from the Kachina release in this folder before runni
 Default source:
 
 ```powershell
-https://github.com/FelixHenrikChristian/RocoPilot/releases/latest/download/RocoPilot.Install.exe
+https://github.com/Mshenchen/RocoPilot/releases/latest/download/RocoPilot.Install.exe
 ```
 
 Build both updater and offline installer:
@@ -79,7 +79,7 @@ If the R2 public domain, account, or bucket changes, update both `.github/workfl
   "name": "RocoPilot 0.2.4",
   "body": "Release notes in Markdown",
   "published_at": "2026-06-08T00:00:00Z",
-  "html_url": "https://github.com/FelixHenrikChristian/RocoPilot/releases/tag/v0.2.4"
+  "html_url": "https://github.com/Mshenchen/RocoPilot/releases/tag/v0.2.4"
 }
 ```
 

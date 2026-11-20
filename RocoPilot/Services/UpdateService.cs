@@ -17,8 +17,8 @@ namespace RocoPilot.Services;
 
 public sealed class UpdateService : IUpdateService
 {
-    private const string GitHubApiUrl = "https://api.github.com/repos/FelixHenrikChristian/RocoPilot/releases/latest";
-    private const string DownloadPageUrl = "https://github.com/FelixHenrikChristian/RocoPilot/releases/latest";
+    private const string GitHubApiUrl = "https://api.github.com/repos/Mshenchen/RocoPilot/releases/latest";
+    private const string DownloadPageUrl = "https://github.com/Mshenchen/RocoPilot/releases/latest";
 
     private static readonly HttpClient HttpClient = CreateHttpClient();
 
