@@ -645,7 +645,9 @@ public sealed class RuntimeTaskStartupTests
         {
             using var frame = CapturedFrame.RentBgra32(16, 9);
             var scan = typeof(RuntimeTaskService).GetMethod("UpdateRuntimeEncounterOcrSignalsAsync", BindingFlags.Instance | BindingFlags.NonPublic)!;
-            await (Task)scan.Invoke(Runtime, [Runtime.CurrentState!, frame, Battle.BattleId, CancellationToken.None])!;
+            // 扫描模式参数由上游新增：这些用例都按战斗中的完整扫描执行。
+            var mode = Enum.Parse(scan.GetParameters()[3].ParameterType, "Full");
+            await (Task)scan.Invoke(Runtime, [Runtime.CurrentState!, frame, Battle.BattleId, mode, CancellationToken.None])!;
         }
 
         public async Task ProcessFrameAsync()

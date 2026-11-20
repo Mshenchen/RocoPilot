@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -64,11 +64,21 @@ public sealed class IndependentTaskServiceTests
         Assert.AreEqual(9d, vm.FlowerSeedRunCount);
         Assert.IsTrue(vm.SaleTask!.IsAvailable);
         Assert.AreEqual(36d, vm.SaleQuantity);
+        Assert.IsTrue(vm.ReuseEquippedSeed);
+        Assert.IsFalse(vm.CanSelectGardenSeed);
+        vm.ReuseEquippedSeed = false;
+        Assert.IsTrue(vm.CanSelectGardenSeed);
+        vm.GardenSeed = "恶魔雪茄";
+        vm.SeedCountIndex = 2;
         vm.SelectedSaleFlower = "象牙花";
         vm.SaleQuantity = 17;
         var sale = fixture.Store.ReadSaved<DailyTaskSettings>(SettingsKeys.DailyTaskSettings)!.Challenges!;
         Assert.AreEqual("象牙花", sale.SaleFlower);
         Assert.AreEqual(17, sale.SaleQuantity);
+        var garden = sale.Clone().Normalize();
+        Assert.IsFalse(garden.ReuseEquippedSeed);
+        Assert.AreEqual("恶魔雪茄", garden.GardenSeed);
+        Assert.AreEqual(3, garden.SeedsPerPlot);
         var savedBefore = fixture.Store.ReadSaved<IndependentTaskSettings>(SettingsKeys.IndependentTaskSettings)!;
         await vm.ResetCommand.ExecuteAsync(null);
         var saved = fixture.Store.ReadSaved<DailyTaskSettings>(SettingsKeys.DailyTaskSettings)!;
@@ -79,6 +89,8 @@ public sealed class IndependentTaskServiceTests
         Assert.AreEqual(IndependentTaskSettings.DefaultLegendaryDifficulty, saved.Challenges.LegendaryDifficulty);
         Assert.AreEqual("向阳花", saved.Challenges.SaleFlower);
         Assert.AreEqual(36, saved.Challenges.SaleQuantity);
+        Assert.IsTrue(saved.Challenges.ReuseEquippedSeed);
+        Assert.IsFalse(vm.CanSelectGardenSeed);
         Assert.AreEqual(savedBefore.FlowerSeedTargetNumber, fixture.Service.Settings.FlowerSeedTargetNumber);
         Assert.AreEqual(savedBefore.FlowerSeedTargetNumber,
             fixture.Store.ReadSaved<IndependentTaskSettings>(SettingsKeys.IndependentTaskSettings)!.FlowerSeedTargetNumber);
@@ -264,7 +276,7 @@ public sealed class IndependentTaskServiceTests
         Assert.AreEqual("新传说精灵", fixture.Runner.Target!.Name);
 
         var restarted = new IndependentTaskService(fixture.Runtime, fixture.Store, fixture.Runner,
-            fixture.Notifications, fixture.Window, null!, null!, null!, null!, null!, NullLogger<IndependentTaskService>.Instance);
+            fixture.Notifications, fixture.Window, null!, null!, null!, null!, null!, null!, NullLogger<IndependentTaskService>.Instance);
         await restarted.LoadSettingsAsync();
         CollectionAssert.AreEqual(IndependentTaskSettings.LegendaryTargets.ToArray(), restarted.LegendaryTargets.ToArray());
         Assert.AreEqual("龙息帕尔", restarted.Settings.LegendaryTargetName);
@@ -792,7 +804,7 @@ public sealed class IndependentTaskServiceTests
                 FlowerSeedOptions = [new(1, "友爱星飞"), new(2, "旧花种")],
                 FlowerSeedTargetNumber = 1
             });
-            Service = new(Runtime, Store, Runner, Notifications, Window, null!, null!, null!, null!, null!, logger ?? NullLogger<IndependentTaskService>.Instance);
+            Service = new(Runtime, Store, Runner, Notifications, Window, null!, null!, null!, null!, null!, null!, logger ?? NullLogger<IndependentTaskService>.Instance);
         }
     }
 

@@ -1192,19 +1192,36 @@ public sealed class FlowerSeedChallengeRunnerTests
     }
 
     [TestMethod]
-    public async Task FreshApproachFramesKeepOneContinuousKeyDown()
+    [DataRow("W")]
+    [DataRow("A")]
+    [DataRow("S")]
+    [DataRow("D")]
+    public async Task FreshApproachFramesKeepOneContinuousKeyDown(string direction)
     {
         var keyboard = new Keyboard { SimulateHold = true };
         await using var walk = new ForwardWalk(keyboard, 1, KeyboardInputMethod.SendInput, CancellationToken.None);
         for (var i = 0; i < 4; i++)
         {
-            await walk.AdvanceAsync(DateTimeOffset.UtcNow.AddMilliseconds(-1000));
+            await walk.AdvanceAsync(DateTimeOffset.UtcNow.AddMilliseconds(-1000), direction);
             await Task.Delay(850);
         }
         Assert.HasCount(1, keyboard.Keys);
+        Assert.AreEqual(direction, keyboard.Keys[0].Key);
         Assert.IsFalse(keyboard.Released.Task.IsCompleted);
         await walk.StopAsync();
         Assert.IsTrue(keyboard.Released.Task.IsCompleted);
+    }
+
+    [TestMethod]
+    public async Task ChangingWalkDirectionReleasesPreviousKeyBeforePressingNext()
+    {
+        var keyboard = new Keyboard { SimulateHold = true };
+        await using var walk = new ForwardWalk(keyboard, 1, KeyboardInputMethod.SendInput, CancellationToken.None);
+        await walk.AdvanceAsync(DateTimeOffset.UtcNow, "D");
+        keyboard.DuringSequence = _ => Assert.IsTrue(keyboard.Released.Task.IsCompleted);
+        await walk.AdvanceAsync(DateTimeOffset.UtcNow, "S");
+        CollectionAssert.AreEqual(new[] { "D", "S" }, keyboard.Keys.Select(key => key.Key).ToArray());
+        await walk.StopAsync();
     }
 
     [TestMethod]
@@ -1276,7 +1293,7 @@ public sealed class FlowerSeedChallengeRunnerTests
         public Action? DuringScroll;
         public Action<int, int>? DuringClick;
         public Task ClickAsync(nint hwnd, int x, int y, KeyboardInputMethod method = KeyboardInputMethod.SendInput,
-            CancellationToken cancellationToken = default, int holdMs = 50) { Clicks++; DuringClick?.Invoke(x, y); return Task.CompletedTask; }
+            CancellationToken cancellationToken = default) { Clicks++; DuringClick?.Invoke(x, y); return Task.CompletedTask; }
         public Task ScrollAsync(nint hwnd, int x, int y, int delta, KeyboardInputMethod method = KeyboardInputMethod.SendInput,
             CancellationToken cancellationToken = default) { DuringScroll?.Invoke(); return Task.CompletedTask; }
         public Task ScrollAtCurrentPositionAsync(nint hwnd, int delta, KeyboardInputMethod method = KeyboardInputMethod.SendInput,

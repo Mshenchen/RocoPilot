@@ -103,6 +103,8 @@ public partial class App : Application
             services.AddSingleton<StaminaCraftingRunner>();
             services.AddSingleton<EveningRestRunner>();
             services.AddSingleton<MailRunner>();
+            services.AddSingleton<BattlePassRunner>();
+            services.AddSingleton<OnnxTextLocator>();
             services.AddSingleton<GardeningRunner>();
             services.AddSingleton<CropSaleRunner>();
             services.AddSingleton<IManualChallengeRunner, ManualChallengeRunner>();
