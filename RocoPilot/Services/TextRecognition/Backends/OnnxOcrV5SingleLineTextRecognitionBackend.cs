@@ -18,7 +18,9 @@ public sealed class OnnxOcrV5SingleLineTextRecognitionBackend : IDisposable
     private const string LanguageName = "Chinese/English";
     private const TextRecognitionMethod ResultMethod = TextRecognitionMethod.OnnxOcrV5;
     private const int ModelHeight = 48;
-    private const int MaximumWidth = 320;
+    // 长横幅（如“龙棋士随手一掷：稀有的异色精灵就藏在这局棋里~”）按 48 高换算自然宽约 600px，
+    // 上限过低会把整行横向压扁，导致“色”“掷”等笔画密集的字漏识别或串字。
+    private const int MaximumWidth = 640;
 
     private readonly Lazy<OnnxOcrV5Recognizer?> _recognizer = new(CreateRecognizer);
     private readonly SemaphoreSlim _recognitionLock = new(1, 1);

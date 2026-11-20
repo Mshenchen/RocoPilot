@@ -290,6 +290,12 @@ public sealed class AutoBattleController
                 if (now - _bloodlineWaitStartedAt.Value < BloodlineWaitTimeout)
                     return new(AutoBattleAction.None, "", "等待血脉提示识别", "-");
             }
+
+            // 异色提示可能漏识别，此时血脉通常也未识别：按配置停止操作，等待手动处理。
+            // 不锁定判定，后续识别到血脉或关闭开关后仍可继续正常流程。
+            if (_bloodline == EncounterBloodlineKind.Unrecognized && filter.StopWhenUnrecognized)
+                return new(AutoBattleAction.NoAction, "", "血脉未识别，已停止自动操作，等待手动处理", "-");
+
             _captureDecision = (_bloodline, filter.ShouldCapture(_bloodline));
         }
 

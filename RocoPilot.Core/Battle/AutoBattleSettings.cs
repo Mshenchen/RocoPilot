@@ -396,8 +396,19 @@ public sealed class BloodlineCaptureFilterSettings
 
     /// <summary>
     /// 未识别出血脉时是否捕捉。旧赛季等无法识别血脉的奇遇也会走此选项。
+    /// 仅在 <see cref="StopWhenUnrecognized"/> 关闭时生效。
     /// </summary>
     public bool CaptureUnrecognized
+    {
+        get;
+        set;
+    } = true;
+
+    /// <summary>
+    /// 血脉未识别（等待超时或无法识别）时停止自动操作，等待手动处理；默认开启。
+    /// 异色提示可能漏识别，此时血脉也多为未识别，停止操作可避免直接捕捉或击败。
+    /// </summary>
+    public bool StopWhenUnrecognized
     {
         get;
         set;
@@ -417,7 +428,8 @@ public sealed class BloodlineCaptureFilterSettings
             CaptureHunXue = CaptureHunXue,
             CaptureWuRan = CaptureWuRan,
             CaptureNormal = CaptureNormal,
-            CaptureUnrecognized = CaptureUnrecognized
+            CaptureUnrecognized = CaptureUnrecognized,
+            StopWhenUnrecognized = StopWhenUnrecognized
         };
     }
 

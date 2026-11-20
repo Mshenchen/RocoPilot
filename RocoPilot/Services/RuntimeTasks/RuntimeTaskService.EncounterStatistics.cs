@@ -444,20 +444,30 @@ public sealed partial class RuntimeTaskService
                 ?? _statisticsService.CurrentDocument.Accounts.FirstOrDefault()?.Uid;
         var detectedAt = DateTimeOffset.Now;
         season = EncounterSeasonTimeline.ResolveForRecording(_encounterSeasonConfigService.Load(), detectedAt, season);
-        var tipText = await _frameRecognizer.RecognizeRegionTextAsync(
+        var tipTextTask = _frameRecognizer.RecognizeRegionTextAsync(
             state,
             frame,
             BattleShinyTipRegionIds,
             cancellationToken);
+        // 「异色」关键词可能落在血脉横幅切片内（如“稀有的异色精灵…”），血脉区域文本同样参与异色判定。
+        var bloodlineTipTextTask = _frameRecognizer.RecognizeRegionTextAsync(
+            state,
+            frame,
+            EncounterBloodlineRecognition.RegionIds,
+            cancellationToken);
+        await Task.WhenAll(tipTextTask, bloodlineTipTextTask);
+        var tipText = await tipTextTask;
+        var bloodlineTipText = await bloodlineTipTextTask;
 
-        var isTipMatch = IsShinyTip(tipText);
+        var isTipMatch = IsShinyTip(tipText) || IsShinyTip(bloodlineTipText);
+        var matchedTipText = !IsShinyTip(tipText) && isTipMatch ? bloodlineTipText : tipText;
         if (!isTipMatch)
         {
             return false;
         }
 
         if (battleId != _battle.BattleId) return false;
-        if (ApplyAutoBattleShinySuspension(tipText, "异色识别", battleId))
+        if (ApplyAutoBattleShinySuspension(matchedTipText, "异色识别", battleId))
             await _shinyNotification.NotifyAsync(frame);
         if (EncounterStatisticsEnabled && !_statisticsService.IsActiveAccountSelectionRequired && accountUid is not null)
         {

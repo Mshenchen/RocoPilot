@@ -149,6 +149,7 @@ public sealed class AutoBattleControllerTests
     {
         var settings = Settings();
         settings.BloodlineCaptureFilter.CaptureUnrecognized = false;
+        settings.BloodlineCaptureFilter.StopWhenUnrecognized = false;
         var battle = new AutoBattleController();
         battle.BeginSkillSelection(settings, Now);
         battle.ObserveEncounterRelieved(settings);
@@ -178,10 +179,41 @@ public sealed class AutoBattleControllerTests
     public void SeasonWithoutBloodlineRecognitionUsesUnknownFilterImmediately()
     {
         var settings = Settings();
+        settings.BloodlineCaptureFilter.StopWhenUnrecognized = false;
         var battle = new AutoBattleController();
         battle.BeginSkillSelection(settings, Now);
         battle.ObserveEncounterRelieved(settings);
         Assert.AreEqual(AutoBattleAction.Capture, battle.PlanSkillSelection(settings, false, Now).Action);
+    }
+
+    [TestMethod]
+    public void UnrecognizedBloodlineStopsOperationsUntilRecognitionSucceeds()
+    {
+        var settings = Settings();
+        Assert.IsTrue(settings.BloodlineCaptureFilter.StopWhenUnrecognized);
+        var battle = new AutoBattleController();
+        battle.BeginSkillSelection(settings, Now);
+        battle.ObserveEncounterRelieved(settings);
+        // 先在 4 秒内等待提示；超时仍未识别则停止操作，不捕捉也不释放。
+        Assert.AreEqual(AutoBattleAction.None, battle.PlanSkillSelection(settings, true, Now).Action);
+        var stopped = battle.PlanSkillSelection(settings, true, Now.AddSeconds(4));
+        Assert.AreEqual(AutoBattleAction.NoAction, stopped.Action);
+        Assert.IsFalse(stopped.ShouldSendKeys);
+        Assert.IsTrue(stopped.Description.Contains("未识别", StringComparison.Ordinal));
+        // 停止期间后续识别到血脉，仍按筛选继续。
+        battle.ObserveBloodline(battle.BattleId, EncounterBloodlineKind.QiYi);
+        Assert.AreEqual(AutoBattleAction.Capture, battle.PlanSkillSelection(settings, true, Now.AddSeconds(5)).Action);
+    }
+
+    [TestMethod]
+    public void UnrecognizedBloodlineWithoutRecognitionSupportAlsoStopsOperations()
+    {
+        var settings = Settings();
+        var battle = new AutoBattleController();
+        battle.BeginSkillSelection(settings, Now);
+        battle.ObserveEncounterRelieved(settings);
+        // 旧赛季无法识别血脉：不等待，直接停止操作。
+        Assert.AreEqual(AutoBattleAction.NoAction, battle.PlanSkillSelection(settings, false, Now).Action);
     }
 
     [TestMethod]
@@ -253,6 +285,7 @@ public sealed class AutoBattleControllerTests
     public void SpiritCaptureListWithoutWhitelistFallsBackToBloodlineFilter()
     {
         var settings = Settings();
+        settings.BloodlineCaptureFilter.StopWhenUnrecognized = false;
         settings.EncounterCapturePolicy.IsEnabled = true;
         settings.EncounterCapturePolicy.OnlyListedSpirits = false;
         settings.EncounterCapturePolicy.Rules.Add(new EncounterCaptureRuleSettings { SpiritName = "吸泥鸥" });
@@ -260,7 +293,7 @@ public sealed class AutoBattleControllerTests
         battle.BeginSkillSelection(settings, Now);
         battle.ObserveEncounterRelieved(settings);
         battle.ObserveEnemyName(battle.BattleId, "恶魔狼");
-        // 名单外且未开白名单：按血脉筛选（赛季无血脉识别时立即捕捉）。
+        // 名单外且未开白名单：按血脉筛选（关闭「未识别时停止操作」时，赛季无血脉识别立即捕捉）。
         Assert.AreEqual(AutoBattleAction.Capture, battle.PlanSkillSelection(settings, false, Now).Action);
     }
 

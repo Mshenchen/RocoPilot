@@ -217,6 +217,7 @@ public sealed class AutoBattleConfigEditorTests
         Assert.IsTrue(result.BloodlineCaptureFilter.CaptureWuRan);
         Assert.IsFalse(result.BloodlineCaptureFilter.CaptureNormal);
         Assert.IsTrue(result.BloodlineCaptureFilter.CaptureUnrecognized);
+        Assert.IsTrue(result.BloodlineCaptureFilter.StopWhenUnrecognized);
     }
 
     [TestMethod]
@@ -230,7 +231,8 @@ public sealed class AutoBattleConfigEditorTests
             CaptureBloodlineHunXue = true,
             CaptureBloodlineWuRan = false,
             CaptureBloodlineNormal = true,
-            CaptureBloodlineUnrecognized = false
+            CaptureBloodlineUnrecognized = false,
+            StopWhenBloodlineUnrecognized = false
         };
 
         Assert.IsTrue(editor.TryBuildSettings(settings, out var result, out _));
@@ -240,6 +242,7 @@ public sealed class AutoBattleConfigEditorTests
         Assert.IsFalse(result.BloodlineCaptureFilter.CaptureWuRan);
         Assert.IsTrue(result.BloodlineCaptureFilter.CaptureNormal);
         Assert.IsFalse(result.BloodlineCaptureFilter.CaptureUnrecognized);
+        Assert.IsFalse(result.BloodlineCaptureFilter.StopWhenUnrecognized);
     }
 
     [TestMethod]

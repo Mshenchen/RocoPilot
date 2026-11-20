@@ -41,6 +41,7 @@ internal sealed class AutoBattleConfigEditor : ObservableObject
     private bool _captureBloodlineWuRan = true;
     private bool _captureBloodlineNormal;
     private bool _captureBloodlineUnrecognized = true;
+    private bool _stopWhenBloodlineUnrecognized = true;
     private bool _capturePolicyEnabled;
     private bool _captureOnlyListedSpirits = true;
 
@@ -183,6 +184,7 @@ internal sealed class AutoBattleConfigEditor : ObservableObject
             if (SetProperty(ref _bloodlineCaptureFilterEnabled, value))
             {
                 OnPropertyChanged(nameof(BloodlineCaptureFilterOptionsEnabled));
+                OnPropertyChanged(nameof(BloodlineUnrecognizedCaptureOptionEnabled));
                 OnPropertyChanged(nameof(BloodlineCaptureFilterSummary));
             }
         }
@@ -250,6 +252,23 @@ internal sealed class AutoBattleConfigEditor : ObservableObject
 
     public bool BloodlineCaptureFilterOptionsEnabled => BloodlineCaptureFilterEnabled;
 
+    /// <summary>未识别的捕捉选项仅在关闭「未识别时停止操作」后可编辑。</summary>
+    public bool BloodlineUnrecognizedCaptureOptionEnabled =>
+        BloodlineCaptureFilterEnabled && !StopWhenBloodlineUnrecognized;
+
+    public bool StopWhenBloodlineUnrecognized
+    {
+        get => _stopWhenBloodlineUnrecognized;
+        set
+        {
+            if (SetProperty(ref _stopWhenBloodlineUnrecognized, value))
+            {
+                OnPropertyChanged(nameof(BloodlineUnrecognizedCaptureOptionEnabled));
+                OnPropertyChanged(nameof(BloodlineCaptureFilterSummary));
+            }
+        }
+    }
+
     public string BloodlineCaptureFilterSummary
     {
         get
@@ -280,14 +299,21 @@ internal sealed class AutoBattleConfigEditor : ObservableObject
                 selected.Add("普通");
             }
 
-            if (CaptureBloodlineUnrecognized)
+            // 未识别时停止操作一旦开启，「未识别」的捕捉选项不再生效。
+            if (CaptureBloodlineUnrecognized && !StopWhenBloodlineUnrecognized)
             {
                 selected.Add("未识别");
             }
 
-            return selected.Count == 0
-                ? "已启用：不捕捉任何血脉，一律释放战技"
-                : $"已启用：仅捕捉 {string.Join("、", selected)}";
+            if (selected.Count == 0)
+            {
+                return StopWhenBloodlineUnrecognized
+                    ? "已启用：不捕捉任何血脉，未识别时停止操作"
+                    : "已启用：不捕捉任何血脉，一律释放战技";
+            }
+
+            var summary = $"已启用：仅捕捉 {string.Join("、", selected)}";
+            return StopWhenBloodlineUnrecognized ? $"{summary}，未识别时停止操作" : summary;
         }
     }
 
@@ -462,7 +488,8 @@ internal sealed class AutoBattleConfigEditor : ObservableObject
             CaptureHunXue = CaptureBloodlineHunXue,
             CaptureWuRan = CaptureBloodlineWuRan,
             CaptureNormal = CaptureBloodlineNormal,
-            CaptureUnrecognized = CaptureBloodlineUnrecognized
+            CaptureUnrecognized = CaptureBloodlineUnrecognized,
+            StopWhenUnrecognized = StopWhenBloodlineUnrecognized
         };
         settings.EncounterCapturePolicy = new EncounterCapturePolicySettings
         {
@@ -517,6 +544,7 @@ internal sealed class AutoBattleConfigEditor : ObservableObject
         CaptureBloodlineWuRan = bloodlineFilter.CaptureWuRan;
         CaptureBloodlineNormal = bloodlineFilter.CaptureNormal;
         CaptureBloodlineUnrecognized = bloodlineFilter.CaptureUnrecognized;
+        StopWhenBloodlineUnrecognized = bloodlineFilter.StopWhenUnrecognized;
         var capturePolicy = settings.EncounterCapturePolicy ?? EncounterCapturePolicySettings.CreateDefault();
         CapturePolicyEnabled = capturePolicy.IsEnabled;
         CaptureOnlyListedSpirits = capturePolicy.OnlyListedSpirits;

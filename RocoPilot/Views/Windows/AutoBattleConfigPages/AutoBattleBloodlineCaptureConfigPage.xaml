@@ -120,8 +120,18 @@
                                           IsChecked="{x:Bind Editor.CaptureBloodlineNormal, Mode=TwoWay}" IsEnabled="{x:Bind Editor.BloodlineCaptureFilterOptionsEnabled, Mode=OneWay}" />
                             <ToggleButton Margin="0,0,8,8"
                                           Style="{StaticResource BloodlineOptionStyle}" Content="未识别"
-                                          IsChecked="{x:Bind Editor.CaptureBloodlineUnrecognized, Mode=TwoWay}" IsEnabled="{x:Bind Editor.BloodlineCaptureFilterOptionsEnabled, Mode=OneWay}" />
+                                          IsChecked="{x:Bind Editor.CaptureBloodlineUnrecognized, Mode=TwoWay}" IsEnabled="{x:Bind Editor.BloodlineUnrecognizedCaptureOptionEnabled, Mode=OneWay}" />
                         </VariableSizedWrapGrid>
+
+                        <CheckBox
+                            Content="未识别时停止操作"
+                            IsChecked="{x:Bind Editor.StopWhenBloodlineUnrecognized, Mode=TwoWay}"
+                            IsEnabled="{x:Bind Editor.BloodlineCaptureFilterOptionsEnabled, Mode=OneWay}" />
+                        <TextBlock
+                            FontSize="12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="等待血脉提示超时或无法识别时，不捕捉也不释放战技，等待手动处理；之后识别到血脉仍会继续。异色提示漏识别时血脉通常也未识别，可避免误捕捉或误击败。"
+                            TextWrapping="Wrap" />
 
                         <Border Style="{StaticResource ConfigHintBarStyle}">
                             <Grid ColumnSpacing="10">
@@ -138,7 +148,7 @@
                                     Grid.Column="1"
                                     FontSize="12"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Text="按提示文字识别血脉，不区分赛季。无法识别时使用「未识别」选项。"
+                                    Text="按提示文字识别血脉，不区分赛季。未开启「未识别时停止操作」时，无法识别按「未识别」选项处理。"
                                     ToolTipService.ToolTip="识别提示中的「奇异、混乱、污染、特性」。"
                                     TextWrapping="Wrap" />
                             </Grid>
