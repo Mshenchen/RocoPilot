@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 env:
-  CLOUDFLARE_ACCOUNT_ID: 20049c2f69ed4c795000cb90655ca4d4
+  CLOUDFLARE_ACCOUNT_ID: a3504b5f29e04e2e5c319d7fd5926de3
   CLOUDFLARE_BUCKET_NAME: rocopilot-release
 
 jobs:

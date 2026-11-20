@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 env:
-  ROCO_R2_PUBLIC_URL: https://pub-749777b9646245b7bc1b15efee2b9b24.r2.dev
+  ROCO_R2_PUBLIC_URL: https://pub-cded862f653b4e8d8ebcbcd3e2d91c05.r2.dev
 
 concurrency:
   group: release-${{ github.ref }}
