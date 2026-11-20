@@ -41,8 +41,13 @@ public sealed record InfoOverlayIslandPresentation(string Category, string Title
                 _ => null
             } : null;
             var creatureName = snapshot.BattleCreatureName;
-            return flow is null ? null : new("战斗流程", flow,
-                string.IsNullOrWhiteSpace(creatureName) ? string.Empty : $"精灵：{creatureName}", creatureName);
+            var details = string.Join(" · ", new[]
+                {
+                    string.IsNullOrWhiteSpace(creatureName) ? string.Empty : $"精灵：{creatureName}",
+                    string.IsNullOrWhiteSpace(snapshot.BattleBloodline) ? string.Empty : $"血脉：{snapshot.BattleBloodline}"
+                }
+                .Where(text => !string.IsNullOrWhiteSpace(text)));
+            return flow is null ? null : new("战斗流程", flow, details, creatureName);
         }
         var category = activity.Kind switch
         {

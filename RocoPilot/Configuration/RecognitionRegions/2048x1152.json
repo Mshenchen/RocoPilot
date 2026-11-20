@@ -19,6 +19,14 @@
       "enabled": true
     },
     {
+      "id": "battle-enemy-health",
+      "x": 1784,
+      "y": 76,
+      "width": 216,
+      "height": 28,
+      "enabled": true
+    },
+    {
       "id": "battle-button-chat",
       "x": 1918,
       "y": 728,

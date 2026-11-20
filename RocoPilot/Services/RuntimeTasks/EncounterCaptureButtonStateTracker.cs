@@ -136,6 +136,24 @@ internal sealed class EncounterCaptureButtonStateTracker
         }
     }
 
+    /// <summary>
+    /// 捕捉按钮之外的其他信号（第一回合敌方血量等）确认奇遇解除时，直接置为已解除，
+    /// 与捕捉按钮禁用变可用同源，供奇遇统计记录复用。
+    /// </summary>
+    public bool MarkRelieved()
+    {
+        lock (_syncRoot)
+        {
+            if (_isRelieved)
+            {
+                return false;
+            }
+
+            _isRelieved = true;
+            return true;
+        }
+    }
+
     public void Reset()
     {
         lock (_syncRoot)

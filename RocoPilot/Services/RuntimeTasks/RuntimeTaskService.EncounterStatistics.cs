@@ -140,6 +140,7 @@ public sealed partial class RuntimeTaskService
         RuntimeTaskState state,
         CapturedFrame frame,
         long battleId,
+        RuntimeOcrScanMode mode,
         CancellationToken cancellationToken)
     {
         var bloodlineTipTask = RecognizeAndApplyBloodlineTipAsync(state, frame, battleId, cancellationToken);
@@ -156,11 +157,14 @@ public sealed partial class RuntimeTaskService
             season,
             battleId,
             cancellationToken);
-        var previewTask = state.Options.RecognitionOverlayEnabled
+        // 未识别入场期（BannerOnly）只识别血脉与异色两个横幅，跳过其余 OCR；
+        // 完整扫描（Full）包含提示预览、名单/统计/异色暂存与精灵名。
+        var previewTask = mode == RuntimeOcrScanMode.Full && state.Options.RecognitionOverlayEnabled
             ? _frameRecognizer.RecognizeRegionTextAsync(state, frame, BattleTipRegionIds, cancellationToken)
             : Task.CompletedTask;
         await Task.WhenAll(shinyTipTask, previewTask, bloodlineTipTask);
-        if (battleId != _battle.BattleId) return;
+        if (mode == RuntimeOcrScanMode.BannerOnly || battleId != _battle.BattleId) return;
+        await TryObserveEnemyNameForCapturePolicyAsync(state, frame, battleId, cancellationToken);
         await TryRecordEncounterAfterRelievedAsync(
             state,
             frame,
@@ -168,7 +172,40 @@ public sealed partial class RuntimeTaskService
             battleId,
             cancellationToken);
         await TryCompletePendingShinyNameAsync(state, frame, battleId, cancellationToken);
-        await UpdateRuntimeSpiritNameAsync(state, frame, battleId, cancellationToken);
+        if (mode == RuntimeOcrScanMode.Full)
+        {
+            await UpdateRuntimeSpiritNameAsync(state, frame, battleId, cancellationToken);
+        }
+    }
+
+    /// <summary>名单启用且奇遇已解除时，OCR 敌方精灵名注入战斗状态；识别失败交给控制器超时兜底。</summary>
+    private async Task TryObserveEnemyNameForCapturePolicyAsync(
+        RuntimeTaskState state,
+        CapturedFrame frame,
+        long battleId,
+        CancellationToken cancellationToken)
+    {
+        if (!_autoBattleSettings.EncounterCapturePolicy.IsEnabled
+            || _autoBattleSettings.EncounterRelievedAction != Core.Battle.AutoBattleEncounterRelievedAction.Capture
+            || !_battle.IsEncounterRelieved
+            || DateTimeOffset.Now - _enemyNameOcrAt < TimeSpan.FromMilliseconds(800))
+        {
+            return;
+        }
+        _enemyNameOcrAt = DateTimeOffset.Now;
+        var enemyNameText = await _frameRecognizer.RecognizeRegionTextAsync(
+            state,
+            frame,
+            BattleEnemyNameRegionIds,
+            cancellationToken);
+        if (battleId != _battle.BattleId) return;
+        var enemyName = await MatchRecognizedSpiritNameAsync(enemyNameText, cancellationToken);
+        if (battleId != _battle.BattleId) return;
+        if (enemyName.Length > 0 && _battle.ObserveEnemyName(battleId, enemyName))
+        {
+            _logger.LogInformation("自动战斗：奇遇解除后识别敌方精灵：{SpiritName}（OCR：{Raw}）",
+                enemyName, LoggingHelper.FormatLogText(enemyNameText));
+        }
     }
 
     private async Task RecognizeAndApplyBloodlineTipAsync(
@@ -192,7 +229,15 @@ public sealed partial class RuntimeTaskService
         {
             if (EncounterBloodlineRecognition.TryParse(tipText, out var kind))
             {
+                var isNewRecognition = _battle.Bloodline == EncounterBloodlineKind.Unrecognized;
                 _battle.ObserveBloodline(battleId, kind);
+                if (isNewRecognition)
+                {
+                    _logger.LogInformation(
+                        "奇遇识别：血脉提示识别为 {Bloodline}（OCR：{Raw}）",
+                        EncounterBloodlineRecognition.GetDisplayName(kind),
+                        LoggingHelper.FormatLogText(tipText));
+                }
                 return;
             }
 
@@ -203,7 +248,8 @@ public sealed partial class RuntimeTaskService
 
             await Task.Delay(RuntimeRecognitionDefaults.FrameCaptureIntervalMs, cancellationToken);
             using var next = _session?.RentFrame(battleId);
-            if (next is null || _isSuspended || _scene != GameScene.Battle || battleId != _battle.BattleId) return;
+            // 未识别（战斗入场过渡）期间横幅可能正在显示，允许复查；回到大世界才视为战斗结束。
+            if (next is null || _isSuspended || _scene == GameScene.World || battleId != _battle.BattleId) return;
             if (next.CapturedAt <= capturedAt) continue;
             capturedAt = next.CapturedAt;
             tipText = await _frameRecognizer.RecognizeRegionTextAsync(
