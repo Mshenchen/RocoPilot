@@ -11,6 +11,87 @@ using RocoPilot.Services.IndependentTasks;
 
 namespace RocoPilot.Tests;
 
+/// <summary>手写界面坐标（2048×1152 参考）换算成客户区像素，避免直接当像素点击。</summary>
+[TestClass]
+public sealed class DailyTaskScreenPointTests
+{
+    [TestMethod]
+    [DataRow(1080, 608)]
+    [DataRow(1920, 1080)]
+    public void ReferencePointsMapIntoClientArea(int width, int height)
+    {
+        using var frame = new CapturedFrame(width, height, new byte[width * height * 4]);
+        var window = new CaptureTargetWindow { Hwnd = 1, ClientWidth = width, ClientHeight = height };
+        var screen = new DailyTaskScreen(frame, window, new ImageMatchingService());
+        var scale = Math.Min(width / 2048d, height / 1152d);
+
+        // 左侧第 4 个类别（转化炼金）、右上角关闭按钮、滑块最右端。
+        var tab = screen.ReferenceToClient(173, 516);
+        Assert.AreEqual(173 * scale, (double)tab.X, 1d, "tab");
+        Assert.AreEqual(516 * scale + (height - 1152 * scale) * .5, (double)tab.Y, 1d, "tab");
+
+        var close = screen.ReferenceToClient(1900, 61);
+        Assert.AreEqual(1900 * scale + (width - 2048 * scale), (double)close.X, 1d, "close");
+        Assert.AreEqual(61 * scale, (double)close.Y, 1d, "close");
+
+        Assert.AreEqual(1555 * scale + (width - 2048 * scale),
+            (double)screen.ReferenceToClient(1555, 0).X, 1d, "slider");
+    }
+
+    [TestMethod]
+    public void ConcretePointsStayInsideSmallClientArea()
+    {
+        using var frame = new CapturedFrame(1080, 608, new byte[1080 * 608 * 4]);
+        var window = new CaptureTargetWindow { Hwnd = 1, ClientWidth = 1080, ClientHeight = 608 };
+        var screen = new DailyTaskScreen(frame, window, new ImageMatchingService());
+
+        // 对应截图里 tab 中心 (91,272)、关闭按钮 (1002,32)、滑块末端 (820,?)
+        Assert.AreEqual((91, 272), screen.ReferenceToClient(173, 516));
+        Assert.AreEqual((1002, 32), screen.ReferenceToClient(1900, 61));
+        Assert.AreEqual(820, screen.ReferenceToClient(1555, 0).X);
+    }
+}
+
+/// <summary>炼金详情面板的凝练印记（紫色星星）识别，素材见 LOCAL_FIXTURES.md。</summary>
+[TestClass]
+[TestCategory("LocalScreenshots")]
+public sealed class StaminaCraftingStarseedTests
+{
+    [TestMethod]
+    [DataRow("convert-alchemy", true)]
+    [DataRow("skill-alchemy", false)]
+    [DataRow("purify-alchemy", false)]
+    public async Task MatchesStarseedOnlyWhenConcentratedMarkIsSelected(string screenshot, bool expected)
+    {
+        var path = Path.Combine(SourceDirectory(), "LocalScreenshots", "2026-11-21", "stamina-crafting",
+            screenshot + ".png");
+        if (!File.Exists(path)) Assert.Inconclusive($"缺少本地截图素材：{path}");
+
+        using var frame = FlowerSeedScreenRecognizerTests.LoadFixture(path, 1080, 608);
+        var window = new CaptureTargetWindow { Hwnd = 1, ClientWidth = 1080, ClientHeight = 608 };
+        var screen = new DailyTaskScreen(frame, window, new ImageMatchingService());
+        var images = new ImageMatchingService();
+
+        async Task<double> Score(string template, int left, int top, int right, int bottom)
+        {
+            var result = await images.MatchAsync(frame, screen.Region(left, top, right, bottom),
+                $"2048x1152/stamina-crafting/{template}.png",
+                new() { MinimumScore = 0, TemplateScaleX = screen.Scale, TemplateScaleY = screen.Scale },
+                CancellationToken.None);
+            return result.Score;
+        }
+
+        var icon = await Score("starseed", 250, 860, 445, 1040);
+        var name = await Score("mark-name", 430, 895, 590, 965);
+
+        // 阈值与 StaminaCraftingRunner 的打分保持一致。
+        Assert.AreEqual(expected, icon >= .80 && name >= .85, $"{screenshot} icon={icon:F3} name={name:F3}");
+    }
+
+    private static string SourceDirectory([System.Runtime.CompilerServices.CallerFilePath] string path = "")
+        => Path.GetDirectoryName(path)!;
+}
+
 [TestClass]
 [TestCategory("LocalScreenshots")]
 public class StaminaCraftingTests

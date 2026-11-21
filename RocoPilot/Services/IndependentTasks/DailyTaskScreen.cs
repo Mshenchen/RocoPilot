@@ -42,6 +42,18 @@ internal sealed class DailyTaskScreen
         RecognitionRegionImageHelper.MapReferenceArea(_x, _y, _width, _height, 2048, 1152,
             left, top, right - left, bottom - top, anchor);
 
+    /// <summary>
+    /// 把 2048x1152 参考坐标换算成客户区像素坐标，供手写的界面坐标（按钮、滑块等）点击使用。
+    /// 与匹配区域共用同一套锚点规则，避免把参考坐标直接当成像素坐标。
+    /// </summary>
+    public (int X, int Y) ReferenceToClient(double referenceX, double referenceY)
+    {
+        var left = (int)Math.Round(referenceX);
+        var top = (int)Math.Round(referenceY);
+        var region = Region(left, top, left + 1, top + 1);
+        return (ClientX(region.X), ClientY(region.Y));
+    }
+
     public async Task<ImageMatchResult?> Find(string template, int left, int top, int right, int bottom,
         CancellationToken token, double threshold = .94, double templateScale = 1, RecognitionAnchor anchor = RecognitionAnchor.Auto)
     {
