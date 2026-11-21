@@ -5,7 +5,7 @@
     xmlns:helpers="using:RocoPilot.Helpers"
     xmlns:vm="using:RocoPilot.ViewModels">
 
-    <Grid Padding="20,16" ColumnSpacing="18" RowSpacing="12">
+    <Grid Padding="14,16" ColumnSpacing="18" RowSpacing="12">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -31,17 +31,21 @@
                     ToolTipService.ToolTip="恢复每日任务的默认顺序、开关和配置" />
         </Grid>
 
-        <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.Items}"
-                  SelectionMode="None" IsItemClickEnabled="False"
-                  CanDragItems="{x:Bind ViewModel.CanReorder, Mode=OneWay}"
-                  CanReorderItems="{x:Bind ViewModel.CanReorder, Mode=OneWay}"
-                  AllowDrop="True">
+        <ListView Grid.Row="1" Padding="0,0,10,0" ItemsSource="{x:Bind ViewModel.Items}"
+                  SelectionMode="None"
+                  IsItemClickEnabled="{x:Bind ViewModel.CanClickReorder, Mode=OneWay}"
+                  ItemClick="TaskList_ItemClick"
+                  CanDragItems="{x:Bind ViewModel.CanNativeReorder, Mode=OneWay}"
+                  CanReorderItems="{x:Bind ViewModel.CanNativeReorder, Mode=OneWay}"
+                  AllowDrop="{x:Bind ViewModel.CanNativeReorder, Mode=OneWay}">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="Padding" Value="0" />
                     <Setter Property="Margin" Value="0,0,0,5" />
                     <Setter Property="MinHeight" Value="0" />
                     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    <!-- 点击排序的强调边框已画在卡片上，关闭系统焦点框避免它超出卡片范围。 -->
+                    <Setter Property="UseSystemFocusVisuals" Value="False" />
                 </Style>
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
@@ -56,11 +60,19 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="⠿"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                       ToolTipService.ToolTip="拖动排序" />
+                                       ToolTipService.ToolTip="{x:Bind ReorderToolTip}" />
                             <TextBlock Grid.Column="1" Width="78" VerticalAlignment="Center" FontSize="13" TextTrimming="CharacterEllipsis" Text="{x:Bind Title}" />
                             <ToggleSwitch Grid.Column="2" MinWidth="0" OnContent="" OffContent=""
                                           VerticalAlignment="Center" AutomationProperties.Name="{x:Bind Title}"
                                           IsEnabled="{x:Bind CanToggle, Mode=OneWay}" IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+                            <!-- 强调边框画在卡片内部（负边距补回内边距），不改变卡片尺寸，避免超出列表。 -->
+                            <Border Grid.ColumnSpan="3"
+                                    Margin="-6,0,-10,0"
+                                    BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                                    BorderThickness="1.5"
+                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                    IsHitTestVisible="False"
+                                    Visibility="{x:Bind MoveSourceVisibility, Mode=OneWay}" />
                         </Grid>
                     </Border>
                 </DataTemplate>

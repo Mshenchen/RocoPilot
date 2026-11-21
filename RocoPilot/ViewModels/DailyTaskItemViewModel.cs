@@ -1,12 +1,37 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
+using Microsoft.UI.Xaml;
+
+using RocoPilot.Helpers;
 using RocoPilot.Models.Runtime;
 
 namespace RocoPilot.ViewModels;
 
 public partial class DailyTaskItemViewModel(DailyTaskKind kind) : ObservableObject
 {
+    private bool _isMoveSource;
+
     public DailyTaskKind Kind { get; } = kind;
+
+    /// <summary>提权时拖拽不可用，点击排序中待移动的任务用强调色边框标出。</summary>
+    public bool IsMoveSource
+    {
+        get => _isMoveSource;
+        set
+        {
+            if (SetProperty(ref _isMoveSource, value))
+            {
+                OnPropertyChanged(nameof(MoveSourceVisibility));
+            }
+        }
+    }
+
+    public Visibility MoveSourceVisibility => _isMoveSource ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary>排序手柄的悬浮提示：按运行权限给出对应操作方式。</summary>
+    public string ReorderToolTip => AppElevation.IsElevated
+        ? "管理员权限下拖拽不可用：点击一个任务选中，再点击另一个任务即可把它移动到该位置。"
+        : "拖动任务可调整顺序。";
 
     public IndependentTaskKind? TaskKind => Kind switch
     {

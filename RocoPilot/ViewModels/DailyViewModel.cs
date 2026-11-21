@@ -10,6 +10,7 @@ using Microsoft.UI.Dispatching;
 
 using RocoPilot.Configuration;
 using RocoPilot.Contracts.Services;
+using RocoPilot.Helpers;
 using RocoPilot.Models.Runtime;
 
 namespace RocoPilot.ViewModels;
@@ -60,7 +61,15 @@ public partial class DailyViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSelectGardenSeed))]
+    [NotifyPropertyChangedFor(nameof(CanNativeReorder))]
+    [NotifyPropertyChangedFor(nameof(CanClickReorder))]
     public partial bool CanReorder { get; set; }
+
+    /// <summary>原生拖拽排序：WinUI 拖放在提权进程中不可用。</summary>
+    public bool CanNativeReorder => CanReorder && !AppElevation.IsElevated;
+
+    /// <summary>提权时的替代交互：点击选中一个任务，再点击另一个任务把它移到该位置。</summary>
+    public bool CanClickReorder => CanReorder && AppElevation.IsElevated;
 
     [ObservableProperty]
     public partial string? SelectedLegendaryTarget { get; set; }
@@ -195,6 +204,20 @@ public partial class DailyViewModel : ObservableObject
         }
 
         Refresh();
+    }
+
+    /// <summary>点击排序：把 source 移动到 target 当前占据的位置（提权后拖拽不可用的替代交互）。</summary>
+    public bool TryMoveItem(DailyTaskItemViewModel source, DailyTaskItemViewModel target)
+    {
+        var sourceIndex = Items.IndexOf(source);
+        var targetIndex = Items.IndexOf(target);
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex == targetIndex)
+        {
+            return false;
+        }
+
+        Items.Move(sourceIndex, targetIndex);
+        return true;
     }
 
     private void Items_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
